@@ -25,6 +25,51 @@ class RunResult:
     pcr: float
     notes: str
 
+def _has_keys(obj: Dict[str, Any], keys: List[str]) -> bool:
+    return all(k in obj for k in keys)
+
+
+def _validate_call(tool_name: str, payload: Dict[str, Any], response: Dict[str, Any]) -> bool:
+    """
+    Minimal contract validation (phase-1).
+    Later replaced by JSON Schema validation + invariants.
+    """
+    if tool_name == "itsm.get_incident":
+        return _has_keys(payload, ["incident_id"]) and _has_keys(response, ["incident_id", "severity", "status", "summary", "details"])
+
+    if tool_name == "data.run_sql":
+        return _has_keys(payload, ["query", "purpose", "evidence_id"]) and _has_keys(
+            response, ["rows", "row_count", "execution_ms", "result_fingerprint", "evidence_ref"]
+        )
+
+    if tool_name == "logs.search":
+        return _has_keys(payload, ["query", "time_range", "evidence_id"]) and _has_keys(
+            response, ["hits", "hit_count", "search_ms", "evidence_ref"]
+        )
+
+    if tool_name == "grc.classify_and_redact":
+        return _has_keys(payload, ["text", "policy"]) and _has_keys(response, ["redacted_text", "pii_found", "tags", "confidence"])
+
+    if tool_name == "comms.send_update":
+        return _has_keys(payload, ["channel", "message", "idempotency_key"]) and _has_keys(response, ["message_id", "sent_ms"])
+
+    return False
+
+
+def _compute_ecr(message: str) -> float:
+    """
+    Phase-1 ECR: claim lines are '- ...' lines.
+    Evidence-linked if EvidenceRefs present and non-empty.
+    """
+    claim_lines = [ln for ln in message.splitlines() if ln.strip().startswith("- ")]
+    if not claim_lines:
+        return 0.0
+
+    has_evidence = "EvidenceRefs:" in message and "[" in message and "]" in message
+    linked = len(claim_lines) if has_evidence else 0
+    return linked / len(claim_lines)
+
+
 
 def _load_scenarios(limit: int | None = None) -> List[Dict[str, Any]]:
     files = sorted([f for f in os.listdir(SCENARIO_DIR) if f.endswith(".json")])
@@ -143,6 +188,9 @@ def _simulate_workflow(s: Dict[str, Any]) -> RunResult:
     Later: enforce contracts, retries, breakers, budgets, and real scoring.
     """
     t0 = time.time()
+    tool_total = 0
+    tool_valid = 0
+
 
     scenario_id = s["scenario_id"]
     slo_latency = float(s["constraints"]["latency_p95_slo_s"])
@@ -150,17 +198,22 @@ def _simulate_workflow(s: Dict[str, Any]) -> RunResult:
     policy = s.get("policy_profile", "FINTECH_DEFAULT")
 
     # Tool calls (mock)
-    incident, _ = _mock_tool_call("itsm.get_incident", {"incident_id": s["initial_state_ref"]["incident_id"]})
+    payload_inc = {"incident_id": s["initial_state_ref"]["incident_id"]}
+    incident, _ = _mock_tool_call("itsm.get_incident", payload_inc)
+    tool_total += 1
+    tool_valid += 1 if _validate_call("itsm.get_incident", payload_inc, incident) else 0
 
-    sql_out, _ = _mock_tool_call(
-        "data.run_sql",
-        {"query": "SELECT region, p95_ms FROM metrics LIMIT 50", "purpose": "triage", "evidence_id": f"{scenario_id}-sql-1"},
-    )
+    payload_sql = {"query": "SELECT region, p95_ms FROM metrics LIMIT 50", "purpose": "triage", "evidence_id": f"{scenario_id}-sql-1"}
+    sql_out, _ = _mock_tool_call("data.run_sql", payload_sql)
+    tool_total += 1
+    tool_valid += 1 if _validate_call("data.run_sql", payload_sql, sql_out) else 0
 
-    logs_out, _ = _mock_tool_call(
-        "logs.search",
-        {"query": "timeout OR 5xx", "time_range": {"start": "2026-02-17T13:50:00Z", "end": "2026-02-17T14:10:00Z"}, "evidence_id": f"{scenario_id}-logs-1"},
-    )
+
+    payload_logs = {"query": "timeout OR 5xx", "time_range": {"start": "2026-02-17T13:50:00Z", "end": "2026-02-17T14:10:00Z"}, "evidence_id": f"{scenario_id}-logs-1"}
+    logs_out, _ = _mock_tool_call("logs.search", payload_logs)
+    tool_total += 1
+    tool_valid += 1 if _validate_call("logs.search", payload_logs, logs_out) else 0
+
 
     # Draft update with evidence refs (simple)
     evidence_refs = [sql_out["evidence_ref"], logs_out["evidence_ref"]]
@@ -172,13 +225,18 @@ def _simulate_workflow(s: Dict[str, Any]) -> RunResult:
         f"- EvidenceRefs: {evidence_refs}"
     )
 
-    redacted, _ = _mock_tool_call("grc.classify_and_redact", {"text": msg, "policy": policy, "return_tags": True})
+    payload_redact = {"text": msg, "policy": policy, "return_tags": True}
+    redacted, _ = _mock_tool_call("grc.classify_and_redact", payload_redact)
+    tool_total += 1
+    tool_valid += 1 if _validate_call("grc.classify_and_redact", payload_redact, redacted) else 0
 
     # Send comms (idempotent)
-    _, _ = _mock_tool_call(
-        "comms.send_update",
-        {"channel": "#inc-payments", "message": redacted["redacted_text"], "idempotency_key": f"{scenario_id}-comms-1"},
-    )
+    payload_comms = {"channel": "#inc-payments", "message": redacted["redacted_text"], "idempotency_key": f"{scenario_id}-comms-1"}
+    comms_out, _ = _mock_tool_call("comms.send_update", payload_comms)
+    tool_total += 1
+    tool_valid += 1 if _validate_call("comms.send_update", payload_comms, comms_out) else 0
+
+
 
     latency_s = time.time() - t0
 
@@ -187,8 +245,9 @@ def _simulate_workflow(s: Dict[str, Any]) -> RunResult:
     est_cost_usd = (est_tokens / 1000.0) * 0.02  # pretend $0.02 per 1K tokens
 
     # Placeholder scoring (we’ll replace with real scorers)
-    avr = 0.95  # assume most calls valid in baseline mock
-    ecr = 0.90  # message includes EvidenceRefs
+    avr = (tool_valid / tool_total) if tool_total else 0.0
+    ecr = _compute_ecr(msg)
+
     # Policy compliance:
 # - If PII not found => compliant
 # - If PII found => compliant only if redaction placeholders are present
