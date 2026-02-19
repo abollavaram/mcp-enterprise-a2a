@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "required": ["hits", "hit_count", "search_ms", "evidence_ref"],
+  "properties": {
+    "hits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ts", "level", "message"],
+        "properties": {
+          "ts": { "type": "string" },
+          "level": { "type": "string" },
+          "message": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "hit_count": { "type": "integer", "minimum": 0 },
+    "search_ms": { "type": "integer", "minimum": 0 },
+    "evidence_ref": {
+      "type": "object",
+      "required": ["evidence_id", "fingerprint", "created_at"],
+      "properties": {
+        "evidence_id": { "type": "string" },
+        "fingerprint": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

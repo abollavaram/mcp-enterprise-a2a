@@ -1,0 +1,64 @@
+{
+  "policy_profile": "FINTECH_DEFAULT",
+  "tools": [
+    {
+      "name": "itsm.search_incidents",
+      "mode": "READ",
+      "input_schema": "contracts/itsm.search_incidents.input.json",
+      "output_schema": "contracts/itsm.search_incidents.output.json",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "itsm.get_incident",
+      "mode": "READ",
+      "input_schema": "contracts/itsm.get_incident.input.json",
+      "output_schema": "contracts/itsm.get_incident.output.json",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "data.run_sql",
+      "mode": "READ",
+      "input_schema": "contracts/data.run_sql.input.json",
+      "output_schema": "contracts/data.run_sql.output.json",
+      "timeout_ms": 3000
+    },
+    {
+      "name": "logs.search",
+      "mode": "READ",
+      "input_schema": "contracts/logs.search.input.json",
+      "output_schema": "contracts/logs.search.output.json",
+      "timeout_ms": 2500
+    },
+    {
+      "name": "itsm.update_incident",
+      "mode": "WRITE",
+      "input_schema": "contracts/itsm.update_incident.input.json",
+      "output_schema": "contracts/itsm.update_incident.output.json",
+      "timeout_ms": 2500,
+      "requires_idempotency_key": true
+    },
+    {
+      "name": "itsm.create_incident",
+      "mode": "WRITE",
+      "input_schema": "contracts/itsm.create_incident.input.json",
+      "output_schema": "contracts/itsm.create_incident.output.json",
+      "timeout_ms": 2500,
+      "requires_idempotency_key": true
+    },
+    {
+      "name": "comms.send_update",
+      "mode": "WRITE",
+      "input_schema": "contracts/comms.send_update.input.json",
+      "output_schema": "contracts/comms.send_update.output.json",
+      "timeout_ms": 2000,
+      "requires_idempotency_key": true
+    },
+    {
+      "name": "grc.classify_and_redact",
+      "mode": "TRANSFORM",
+      "input_schema": "contracts/grc.classify_and_redact.input.json",
+      "output_schema": "contracts/grc.classify_and_redact.output.json",
+      "timeout_ms": 1500
+    }
+  ]
+}

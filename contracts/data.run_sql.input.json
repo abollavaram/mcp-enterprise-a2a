@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["query", "purpose", "evidence_id"],
+  "properties": {
+    "query": { "type": "string", "minLength": 1 },
+    "params": { "type": "object" },
+    "timeout_ms": { "type": "integer", "minimum": 1, "maximum": 10000, "default": 3000 },
+    "purpose": { "type": "string", "enum": ["triage", "evidence", "kpi_check"] },
+    "evidence_id": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

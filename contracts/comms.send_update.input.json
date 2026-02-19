@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "required": ["channel", "message", "idempotency_key"],
+  "properties": {
+    "channel": { "type": "string", "minLength": 1 },
+    "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "idempotency_key": { "type": "string", "minLength": 8 }
+  },
+  "additionalProperties": false
+}
