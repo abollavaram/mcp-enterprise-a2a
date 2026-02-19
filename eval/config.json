@@ -1,0 +1,14 @@
+{
+  "policy_profile": "FINTECH_DEFAULT",
+  "slo": { "latency_p95_s": 12, "cost_usd": 0.08 },
+  "controls": {
+    "retries_enabled": true,
+    "circuit_breaker_enabled": true,
+    "deadline_propagation_enabled": true
+  },
+  "failure_injection": {
+    "logs_search_timeout_rate": 0.3,
+    "logs_search_down_rate": 0.1,
+    "data_run_sql_timeout_rate": 0.1
+  }
+}
