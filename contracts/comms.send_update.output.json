@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": ["message_id", "sent_ms"],
+  "properties": {
+    "message_id": { "type": "string", "minLength": 6 },
+    "sent_ms": { "type": "integer", "minimum": 0 }
+  },
+  "additionalProperties": false
+}

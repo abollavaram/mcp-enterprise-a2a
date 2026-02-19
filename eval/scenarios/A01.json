@@ -1,0 +1,17 @@
+{
+  "scenario_id": "A01",
+  "category": "incident_enrichment",
+  "policy_profile": "FINTECH_DEFAULT",
+  "constraints": { "latency_p95_slo_s": 12, "cost_slo_usd": 0.08 },
+  "input_request": "Payments latency spiked in us-east. Investigate impact, gather evidence, and update the incident with severity recommendation.",
+  "initial_state_ref": {
+    "incident_id": "INC-1001",
+    "db_fixture": "fixtures/payments_latency_us_east.sql",
+    "logs_fixture": "fixtures/payments_service_us_east.log"
+  },
+  "expected_outputs": {
+    "requires_evidence_refs": true,
+    "requires_severity_recommendation": true,
+    "requires_stakeholder_update": true
+  }
+}

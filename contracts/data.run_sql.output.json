@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": ["rows", "row_count", "execution_ms", "result_fingerprint", "evidence_ref"],
+  "properties": {
+    "rows": { "type": "array", "items": { "type": "object" } },
+    "row_count": { "type": "integer", "minimum": 0 },
+    "execution_ms": { "type": "integer", "minimum": 0 },
+    "result_fingerprint": { "type": "string", "minLength": 8 },
+    "evidence_ref": {
+      "type": "object",
+      "required": ["evidence_id", "fingerprint", "created_at"],
+      "properties": {
+        "evidence_id": { "type": "string" },
+        "fingerprint": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

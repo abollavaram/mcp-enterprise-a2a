@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "required": ["incident_id"],
+  "properties": {
+    "incident_id": { "type": "string", "minLength": 3 }
+  },
+  "additionalProperties": false
+}
