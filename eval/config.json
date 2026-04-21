@@ -1,6 +1,9 @@
 {
   "policy_profile": "FINTECH_DEFAULT",
-  "slo": { "latency_p95_s": 12, "cost_usd": 0.08 },
+  "slo": {
+    "latency_p95_s": 12,
+    "cost_usd": 0.08
+  },
   "controls": {
     "retries_enabled": true,
     "circuit_breaker_enabled": true,

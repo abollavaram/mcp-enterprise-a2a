@@ -1,0 +1,19 @@
+{
+  "scenario_id": "A09",
+  "category": "incident_enrichment",
+  "policy_profile": "FINTECH_DEFAULT",
+  "constraints": {
+    "latency_p95_slo_s": 12,
+    "cost_slo_usd": 0.08
+  },
+  "input_request": "Approval rate dropped suddenly in us-east. Collect evidence and produce a triage summary.",
+  "initial_state_ref": {
+    "incident_id": "INC-1009",
+    "db_fixture": "fixtures/a09.sql",
+    "logs_fixture": "fixtures/a09.log"
+  },
+  "expected_outputs": {
+    "requires_evidence_refs": true,
+    "requires_stakeholder_update": true
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "scenario_id": "A08",
+  "category": "incident_enrichment",
+  "policy_profile": "FINTECH_DEFAULT",
+  "constraints": {
+    "latency_p95_slo_s": 12,
+    "cost_slo_usd": 0.08
+  },
+  "input_request": "Database connection pool appears exhausted. Gather supporting evidence and prepare stakeholder communication.",
+  "initial_state_ref": {
+    "incident_id": "INC-1008",
+    "db_fixture": "fixtures/a08.sql",
+    "logs_fixture": "fixtures/a08.log"
+  },
+  "expected_outputs": {
+    "requires_evidence_refs": true,
+    "requires_stakeholder_update": true
+  }
+}

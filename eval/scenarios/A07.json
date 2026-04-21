@@ -1,0 +1,19 @@
+{
+  "scenario_id": "A07",
+  "category": "incident_enrichment",
+  "policy_profile": "FINTECH_DEFAULT",
+  "constraints": {
+    "latency_p95_slo_s": 12,
+    "cost_slo_usd": 0.08
+  },
+  "input_request": "Inference nodes show CPU saturation and autoscaling did not trigger. Gather evidence for triage.",
+  "initial_state_ref": {
+    "incident_id": "INC-1007",
+    "db_fixture": "fixtures/a07.sql",
+    "logs_fixture": "fixtures/a07.log"
+  },
+  "expected_outputs": {
+    "requires_evidence_refs": true,
+    "requires_stakeholder_update": true
+  }
+}

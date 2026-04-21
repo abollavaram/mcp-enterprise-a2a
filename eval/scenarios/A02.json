@@ -1,0 +1,19 @@
+{
+  "scenario_id": "A02",
+  "category": "incident_enrichment",
+  "policy_profile": "FINTECH_DEFAULT",
+  "constraints": {
+    "latency_p95_slo_s": 12,
+    "cost_slo_usd": 0.08
+  },
+  "input_request": "5xx errors on /checkout after deploy v2.31.4. Gather evidence and draft stakeholder update.",
+  "initial_state_ref": {
+    "incident_id": "INC-1002",
+    "db_fixture": "fixtures/a02.sql",
+    "logs_fixture": "fixtures/a02.log"
+  },
+  "expected_outputs": {
+    "requires_evidence_refs": true,
+    "requires_stakeholder_update": true
+  }
+}
