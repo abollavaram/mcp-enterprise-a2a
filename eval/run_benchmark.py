@@ -338,30 +338,32 @@ def _simulate_workflow(s: Dict[str, Any], cfg: Dict[str, Any]) -> RunResult:
         tool_total += 1
         tool_valid += 1 if _validate_call("data.run_sql", payload_sql, sql_out) else 0
 
-        # logs.search (may fail; we degrade gracefully)
-        logs_out = None
-        logs_err = None
-        payload_logs = {
-            "query": "timeout OR 5xx",
-            "time_range": {"start": "2026-02-17T13:50:00Z", "end": "2026-02-17T14:10:00Z"},
-            "evidence_id": f"{scenario_id}-logs-1",
-            "_fi": fi,
-        }
-        try:
-            logs_out = _call_with_controls("logs.search", payload_logs, deadline_ms, controls, breaker_state)
-            tool_total += 1
-            tool_valid += 1 if _validate_call("logs.search", payload_logs, logs_out) else 0
-        except ToolError as e:
-            logs_err = e
-            notes_parts.append(f"degraded_logs={e.code}")
+        # logs.search x2 (may fail; we degrade gracefully)
+        logs_evidence = []
+        logs_errors = []
+        for idx, query in enumerate(["timeout OR 5xx", "processor=bankA OR retrying request"], start=1):
+            payload_logs = {
+                "query": query,
+                "time_range": {"start": "2026-02-17T13:50:00Z", "end": "2026-02-17T14:10:00Z"},
+                "evidence_id": f"{scenario_id}-logs-{idx}",
+                "_fi": fi,
+            }
+            try:
+                logs_out = _call_with_controls("logs.search", payload_logs, deadline_ms, controls, breaker_state)
+                logs_evidence.append(logs_out["evidence_ref"])
+                tool_total += 1
+                tool_valid += 1 if _validate_call("logs.search", payload_logs, logs_out) else 0
+            except ToolError as e:
+                logs_errors.append(e.code)
+
+        if logs_errors:
+            notes_parts.append(f"degraded_logs={','.join(logs_errors)}")
 
         # Evidence refs
-        evidence_refs = [sql_out["evidence_ref"]]
-        if logs_out is not None:
-            evidence_refs.append(logs_out["evidence_ref"])
+        evidence_refs = [sql_out["evidence_ref"], *logs_evidence]
 
         # Draft update
-        evidence_line = "upstream timeouts observed" if logs_out is not None else f"logs unavailable ({logs_err.code})"
+        evidence_line = "upstream timeouts observed" if logs_evidence else f"logs unavailable ({logs_errors[-1]})"
         msg = (
             f"[{scenario_id}] Incident {incident['incident_id']} triage update\n"
             f"- Current: severity={incident['severity']} status={incident['status']}\n"
