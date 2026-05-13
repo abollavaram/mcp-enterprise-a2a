@@ -1,0 +1,29 @@
+{
+  "scenario_id": "A02",
+  "category": "incident_enrichment_strict",
+  "policy_profile": "FINTECH_DEFAULT",
+  "constraints": {
+    "latency_p95_slo_s": 0.9,
+    "cost_slo_usd": 0.08,
+    "deadline_budget_ratio": 0.7
+  },
+  "input_request": "Payments latency spike with regulator-facing SLA obligations. Evidence must include logs before stakeholder update.",
+  "initial_state_ref": {
+    "incident_id": "INC-1002",
+    "db_fixture": "fixtures/payments_latency_us_east.sql",
+    "logs_fixture": "fixtures/payments_service_us_east.log"
+  },
+  "runtime": {
+    "logs_queries": [
+      "timeout OR 5xx",
+      "processor=bankA OR retrying request",
+      "error_rate OR queue backlog"
+    ]
+  },
+  "expected_outputs": {
+    "requires_evidence_refs": true,
+    "requires_severity_recommendation": true,
+    "requires_stakeholder_update": true,
+    "logs_required": true
+  }
+}
