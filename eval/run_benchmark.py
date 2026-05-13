@@ -32,6 +32,9 @@ def _load_scenarios(limit: int | None = None) -> List[Dict[str, Any]]:
 
 
 =======
+
+
+=======
     else:
         raise ValueError(f"Unknown tool: {tool_name}")
 
@@ -237,6 +240,7 @@ def _simulate_workflow(s: Dict[str, Any], cfg: Dict[str, Any]) -> RunResult:
 # Main
 # -------------------------
 main
+ main
 def main() -> None:
     _ensure_out_dir()
     cfg = _load_config()

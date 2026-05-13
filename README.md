@@ -1,6 +1,6 @@
 # MCP Agent-to-Agent Enterprise Workflow Automation (FINTECH)
 
-
+ main
 Reliability-first benchmark harness for **MCP-style enterprise workflow orchestration** in simulated fintech incident response.
 
 ## Why this project exists
@@ -80,6 +80,8 @@ Real:
 - Upgrade contract validation to JSON Schema + cross-tool invariants
 - Split workflow policies by domain-criticality profile
 - Add CI assertions on minimum expected ablation deltas
+
+=======
 =======
 Benchmark-driven reliability harness for **MCP-style enterprise workflow orchestration** under simulated fintech incident-response scenarios.
 
@@ -195,3 +197,4 @@ Artifacts:
 - Benchmark run output: `eval/out/run_results.jsonl`
 - Ablation output: `eval/out/ablation_results.json`
 main
+ main

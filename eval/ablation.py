@@ -8,6 +8,10 @@ import statistics
 from typing import Any, Dict, List
 
 
+from run_benchmark import _ensure_out_dir, _load_config, _load_scenarios
+from workflow_engine import simulate_workflow
+=======
+ main
 
 OUT_PATH = os.path.join("eval", "out", "ablation_results.json")
 
@@ -18,6 +22,10 @@ def _run_many(cfg: Dict[str, Any], scenarios: List[Dict[str, Any]], runs: int, s
         random.seed(seed + i)
         for s in scenarios:
 
+            rows.append(simulate_workflow(s, cfg))
+=======
+
+ main
 
     total = len(rows)
     successes = sum(1 for r in rows if r.success)
